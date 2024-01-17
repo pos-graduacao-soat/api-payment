@@ -1,0 +1,366 @@
+openapi: "3.0.2"
+info:
+  version: 1.0.0
+  title: Lanchonete 55
+  description: >
+    **Sistema de gestão e pedidos de uma lanchonete onde é possível cadastrar, produtos, clientes e realizar pedidos**
+paths:
+  /customers:
+    post:
+      tags:
+        - Customers
+      summary: Cria um cliente
+      requestBody:
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: "#/components/schemas/CustomerToCreateSchema"
+            examples:
+              Example1:
+                value:
+                  name: "Gabriel"
+                  documentNumber: "16349914007"
+                  email: "gabriel@email.com"
+      responses:
+        200:
+          description: Cliente registrado com sucesso
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: "#/components/schemas/CreatedCustomerSchema"
+                  message:
+                    type: string
+                    description: Mensagem de sucesso.
+        400:
+          $ref: "#/components/responses/BadRequest"
+        500:
+          $ref: "#/components/responses/InternalServerError"
+  /customers/{customerId}:
+    get:
+      tags:
+        - Customers
+      summary: Busca um cliente por ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Id do cliente
+          schema:
+            type: string
+      responses:
+        200:
+          description: Cliente encontrado
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: "#/components/schemas/CreatedCustomerSchema"
+                  message:
+                    type: string
+                    description: Mensagem de sucesso.
+        404:
+          $ref: "#/components/responses/NotFound"
+        500:
+          $ref: "#/components/responses/InternalServerError"
+  /products:
+    post:
+      tags:
+        - Products
+      summary: Cria um novo produto
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProductToCreateSchema"
+      responses:
+        200:
+          description: Produto registrado com sucesso
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: "#/components/schemas/CreatedProductSchema"
+                  message:
+                    type: string
+                    description: Mensagem de sucesso.
+        400:
+          $ref: "#/components/responses/BadRequest"
+        500:
+          $ref: "#/components/responses/InternalServerError"
+    get:
+      tags:
+        - Products
+      summary: Listagem de produtos
+      parameters:
+        - name: category
+          in: query
+          required: false
+          description: Categorias do produto
+          schema:
+            type: string
+            enum:
+              - Beverages
+              - MainCourses
+              - SideDishes
+              - Desserts
+      responses:
+        200:
+          description: Listagem de pedidos
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/CreatedOrderSchema"
+                  message:
+                    type: string
+                    description: Mensagem de sucesso.
+        500:
+          $ref: "#/components/responses/InternalServerError"
+  /products/{id}:
+    patch:
+      tags:
+        - Products
+      summary: Atualiza um produto
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Id do produto
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: "#/components/schemas/ProductToUpdateSchema"
+            examples:
+              Example1:
+                value:
+                  name: "X-Baconzinho"
+                  category: "MainCourse"
+                  description: "Pão, hambúrguer, queijo, bacon, alface e tomate"
+                  price: 20.0
+                  image: "/link/da/imagem"
+      responses:
+        200:
+          description: Produto registrado com sucesso
+          content:
+            application/json:
+              schema:
+                properties:
+                  data:
+                    $ref: "#/components/schemas/CreatedProductSchema"
+                  message:
+                    type: string
+                    description: Mensagem de sucesso.
+        400:
+          $ref: "#/components/responses/BadRequest"
+        404:
+          $ref: "#/components/responses/NotFound"
+        500:
+          $ref: "#/components/responses/InternalServerError"
+
+    get:
+      tags:
+        - Payments
+      summary: Busca um pagamento por id do pedido
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Id do pedido
+          schema:
+            type: string
+      responses:
+        200:
+          description: Pagamento encontrado com sucesso
+          content:
+            application/json:
+              schema:
+                properties:
+                  data:
+                    $ref: "#/components/schemas/PaymentSchema"
+                  message:
+                    type: string
+                    description: Mensagem de sucesso.
+        400:
+          $ref: "#/components/responses/BadRequest"
+        404:
+          $ref: "#/components/responses/NotFound"
+        500:
+          $ref: "#/components/responses/InternalServerError"
+components:
+  schemas:
+    CreatedCustomerSchema:
+      type: object
+      description: Propriedades completas de um cliente.
+      properties:
+        id:
+          type: string
+          description: Id do cliente.
+        documentNumber:
+          type: string
+          description: Numero do CPF da pessoal.
+        name:
+          type: string
+          description: Nome da pessoa.
+        email:
+          type: string
+          description: Email da pessoa.
+        createdAt:
+          type: string
+          format: date-time
+          description: Data de criação do cliente.
+        updatedAt:
+          type: string
+          format: date-time
+          description: Data de atualização do cliente.
+    CreatedProductSchema:
+      type: object
+      description: Propriedades completas de um produto.
+      properties:
+        id:
+          type: string
+          description: Id do produto.
+        name:
+          type: string
+          description: Nome do produto.
+        description:
+          type: string
+          description: Descrição do produto.
+        category:
+          type: string
+          description: Categoria do produto.
+        price:
+          type: number
+          description: Preço do produto.
+        createdAt:
+          type: string
+          format: date-time
+          description: Data de criação do cliente.
+        updatedAt:
+          type: string
+          format: date-time
+          description: Data de atualização do cliente.
+    CustomerToCreateSchema:
+      type: object
+      description: Propriedades para se criar um produto.
+      properties:
+        documentNumber:
+          type: string
+          description: Numero do CPF da pessoal.
+        name:
+          type: string
+          description: Nome da pessoa.
+        email:
+          type: string
+          description: Email da pessoa.
+    ProductToCreateSchema:
+      type: object
+      description: Propriedades para se criar um produto.
+      required:
+        - name
+        - category
+        - description
+        - price
+      properties:
+        name:
+          type: string
+          description: Nome do produto.
+        description:
+          type: string
+          description: Descrição do produto.
+        category:
+          type: string
+          description: Categoria do produto.
+          enum:
+            - Beverages
+            - MainCourses
+            - SideDishes
+            - Desserts
+        price:
+          type: number
+          description: Preço do produto.
+    ProductToUpdateSchema:
+      type: object
+      description: Propriedades para se atualizar um produto.
+      properties:
+        name:
+          type: string
+          description: Nome do produto.
+        description:
+          type: string
+          description: Descrição do produto.
+        category:
+          type: string
+          description: Categoria do produto.
+          enum:
+            - Beverages
+            - MainCourses
+            - SideDishes
+            - Desserts
+        price:
+          type: number
+          description: Preço do produto.
+  responses:
+    BadRequest:
+      description: Invalid Request
+      content:
+        "application/json":
+          schema:
+            properties:
+              data:
+                type: object
+                properties:
+                  stack:
+                    type: string
+              message:
+                type: string
+                title: Error message
+                description: Describes a message informing a reason for the error
+                example: "Email required"
+    NotFound:
+      description: Entidade nao encontrada
+      content:
+        "application/json":
+          schema:
+            properties:
+              data:
+                type: object
+                properties:
+                  stack:
+                    type: string
+              message:
+                type: string
+                title: Mensagem de erro
+                description: Descreve a mensagem informando o motivo do erro
+                example: "Not Found"
+    InternalServerError:
+      description: Internal server error
+      content:
+        "application/json":
+          schema:
+            properties:
+              data:
+                type: object
+                properties:
+                  stack:
+                    type: string
+              message:
+                type: string
+                title: Error message
+                description: Describes a message informing a reason for the error
+                example: "Internal Server Error"

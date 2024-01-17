@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: db-lanchonete-55
+  labels:
+    app: db-lanchonete-55
+spec:
+  template:
+    metadata:
+      name: db-lanchonete-55
+      labels:
+        app: db-lanchonete-55
+    spec:
+      containers:
+        - name: db-lanchonete-55-container
+          image: mysql:8.0.20
+          ports:
+            - containerPort: 3306
+          volumeMounts:
+            - name: mysql-data
+              mountPath: /var/lib/mysql-8.0.20
+          resources:
+            limits:
+              cpu: 1
+              memory: 1Gi
+          envFrom:
+            - secretRef:
+                name: db-lanchonete-55-secrets
+      volumes:
+        - name: mysql-data
+          persistentVolumeClaim:
+            claimName: pvc-db-lanchonete-55
+  replicas: 1
+  selector:
+    matchLabels:
+      app: db-lanchonete-55

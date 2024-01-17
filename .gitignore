@@ -1,0 +1,6 @@
+node_modules
+.env
+*.log
+docker
+dist
+.vscode

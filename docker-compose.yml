@@ -1,0 +1,23 @@
+version: '3.3'
+services:
+  payment-mongo:
+    image: mongo:latest
+    container_name: api-entity-mongo
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: root
+    volumes:
+      - ./docker/data:/data/db
+  server:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    env_file:
+      - .env
+    ports:
+      - 3000:3000
+    depends_on:
+      - payment-mongo
+

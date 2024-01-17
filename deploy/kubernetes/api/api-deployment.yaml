@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: api-lanchonete-55
+  labels:
+    app: api-lanchonete-55
+spec:
+  template:
+    metadata:
+      name: api-lanchonete-55
+      labels:
+        app: api-lanchonete-55
+    spec:
+      initContainers:
+        - name: migration-container
+          image: gabrielaranda/lanchonete-55-api:latest
+          command: ["npm", "run", "update-migrations"]
+          envFrom:
+            - secretRef:
+                name: api-lanchonete-55-secrets
+      containers:
+        - name: api-lanchonete-55-container
+          image: gabrielaranda/lanchonete-55-api:latest
+          ports:
+            - containerPort: 3000
+          resources:
+            limits:
+              cpu: 1
+              memory: 1Gi
+          envFrom:
+            - secretRef:
+                name: api-lanchonete-55-secrets
+  replicas: 2
+  selector:
+    matchLabels:
+      app: api-lanchonete-55
