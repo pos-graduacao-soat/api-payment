@@ -44,4 +44,19 @@ export class MongoPaymentRepository implements IPaymentRepository {
 
     return isUpdated?._id ? true : false
   }
+
+  async getByOrderId(orderId: string): Promise<Payment | null> {
+    const payment = await this.collection.findOne({ orderId })
+
+    if (!payment) return null
+
+    return new Payment({
+      createdAt: payment.createdAt,
+      updatedAt: payment.updatedAt,
+      id: payment.id,
+      code: payment.code,
+      status: payment.status,
+      orderId: payment.orderId
+    })
+  }
 }

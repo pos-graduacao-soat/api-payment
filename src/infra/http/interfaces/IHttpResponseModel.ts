@@ -1,5 +1,5 @@
 export interface IHttpResponseModel {
   statusCode: number
-  body: Record<string, unknown>
+  body: any
   message?: string
 }

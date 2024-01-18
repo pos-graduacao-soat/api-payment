@@ -3,7 +3,7 @@ import { container } from 'tsyringe'
 import { adaptErrorHandler } from '../adapters/ExpressErrorHandlerAdapter'
 import { HttpErrorHandler } from './middlewares/ErrorHandler'
 import { utilRoutes } from './routes/UtilsRoutes'
-import { registerPaymentRoutes } from './routes/CustomerRoutes'
+import { registerPaymentRoutes } from './routes/PaymentRoutes'
 
 function startHttpServer() {
 

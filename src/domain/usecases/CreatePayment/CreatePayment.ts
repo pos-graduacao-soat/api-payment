@@ -6,6 +6,8 @@ import { IOrderRepository } from '../../ports/repositories/Order'
 import { NotFoundError } from '../../errors/NotFoundError'
 import { Order } from '../../valueObjects/Order'
 import { IPaymentRepository } from '../../ports/repositories/Payment'
+import { MissingNecessaryDataError } from '../../errors/MissingNecessaryData'
+import { AlreadyExistsError } from '../../errors/AlreadyExists'
 
 @injectable()
 export class CreatePaymentUseCase implements ICreatePaymentUseCase {
@@ -19,6 +21,9 @@ export class CreatePaymentUseCase implements ICreatePaymentUseCase {
   async create(params: CreatePaymentDTO): Promise<Payment> {
     const { orderId } = params
 
+    if (!orderId) throw new MissingNecessaryDataError('Missing necessary param orderId')
+
+    await this.doesPaymentExistsForOrderId(orderId)
     await this.doesOrderExists(orderId)
 
     const payment = this.createPaymentObject(orderId)
@@ -58,5 +63,11 @@ export class CreatePaymentUseCase implements ICreatePaymentUseCase {
     }
 
     return paymentCode
+  }
+
+  private async doesPaymentExistsForOrderId(orderId: string): Promise<void> {
+    const foundPayment = await this.paymentRepository.getByOrderId(orderId)
+
+    if (foundPayment) throw new AlreadyExistsError('Payment already exists for this order')
   }
 }
