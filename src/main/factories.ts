@@ -4,6 +4,8 @@ import { MongoPaymentRepository } from '../infra/repositories/mongo/Payment'
 import { CreatePaymentUseCase, ICreatePaymentUseCase } from '../domain/usecases'
 import { HttpOrderRepository } from '../infra/repositories'
 import { HttpService } from '../infra/http/HttpService'
+import { IProcessPaymentUseCase } from '../domain/usecases/ProcessPayment/IProcessPayment'
+import { ProcessPaymentUseCase } from '../domain/usecases/ProcessPayment/ProcessPayment'
 
 export async function initializeContainer() {
   const mongoDbClientInstance = await MongoDbClient.connect()
@@ -16,4 +18,5 @@ export async function initializeContainer() {
   container.registerSingleton('IOrderRepository', HttpOrderRepository)
 
   container.register<ICreatePaymentUseCase>('ICreatePaymentUseCase', CreatePaymentUseCase)
+  container.register<IProcessPaymentUseCase>('IProcessPaymentUseCase', ProcessPaymentUseCase)
 }

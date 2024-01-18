@@ -44,6 +44,11 @@ export class HttpOrderRepository implements IOrderRepository {
   }
 
   async updateStatus(id: string, status: Status): Promise<boolean> {
+    const orderResponse = await this.httpService
+      .patch<GetOrderByIdResponseModel>(`${this.baseUrl}/orders/${id}`, { status })
+
+    if (orderResponse.status !== 200) return false
+
     return true
   }
 }

@@ -18,7 +18,8 @@ export class MongoPaymentRepository implements IPaymentRepository {
       id: payment.id,
       orderId: payment.orderId,
       code: payment.code,
-      status: payment.status
+      status: payment.status,
+      createdAt: payment.createdAt,
     })
 
     return createdPayment.acknowledged
@@ -39,10 +40,23 @@ export class MongoPaymentRepository implements IPaymentRepository {
     })
   }
 
-  async updateStatus(id: string, status: Status): Promise<boolean> {
-    const isUpdated = await this.collection.findOneAndUpdate({ id }, { $set: { status, updated_at: new Date() } })
+  async updateStatus(id: string, status: Status): Promise<Payment | null> {
+    const result = await this.collection.findOneAndUpdate(
+      { id },
+      { $set: { status, updatedAt: new Date() } },
+      { returnDocument: 'after' }
+    )
 
-    return isUpdated?._id ? true : false
+    if (!result) return null
+
+    return new Payment({
+      createdAt: result.createdAt,
+      updatedAt: result.updatedAt,
+      id: result.id,
+      code: result.code,
+      status: result.status,
+      orderId: result.orderId
+    })
   }
 
   async getByOrderId(orderId: string): Promise<Payment | null> {
