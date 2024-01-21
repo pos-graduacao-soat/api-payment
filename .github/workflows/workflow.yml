@@ -1,0 +1,31 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ "*" ]
+
+jobs:
+  build-push-image:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Get branch name
+      shell: bash
+      id: get_branch_name
+      run: echo "BRANCH_NAME=${GITHUB_REF#refs/heads/}" >> $GITHUB_ENV
+    
+    - name: Build Docker image
+      run: docker build -t ${{ secrets.ECR_URI }}:${{ env.BRANCH_NAME }} .
+
+    - name: Login to AWS ECR and push Docker image
+      if: github.ref == 'refs/heads/main'
+      run: |
+        aws configure set aws_access_key_id ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws configure set aws_secret_access_key ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws configure set aws_session_token ${{ secrets.AWS_SESSION_TOKEN }}
+        aws configure set default.region us-east-1
+        
+        aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin ${{ secrets.ECR_URI }}
+        
+        docker push ${{ secrets.ECR_URI }}:${{ env.BRANCH_NAME }}
