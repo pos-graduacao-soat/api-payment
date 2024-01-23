@@ -6,7 +6,7 @@
   "scripts": {
     "build": "rimraf dist && tsc -p . && cp -r docs dist",
     "test": "jest --coverage",
-    "start": "node dist/src/main/app.js",
+    "start": "node dist/main/app.js",
     "dev": "ts-node-dev --respawn --transpile-only --ignore-watch node_modules src/main/app.ts",
     "lint": "eslint --fix ./src/**",
     "config-k8s": "./k8s-config.sh"
