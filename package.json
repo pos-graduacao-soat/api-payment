@@ -5,11 +5,10 @@
   "main": "app.ts",
   "scripts": {
     "build": "rimraf dist && tsc -p . && cp -r docs dist",
-    "test": "jest --coverage",
+    "test": "jest --coverage --detectOpenHandles --forceExit --verbose --silent",
     "start": "node dist/main/app.js",
     "dev": "ts-node-dev --respawn --transpile-only --ignore-watch node_modules src/main/app.ts",
-    "lint": "eslint --fix ./src/**",
-    "config-k8s": "./k8s-config.sh"
+    "lint": "eslint --fix ./src/**"
   },
   "keywords": [],
   "author": "",

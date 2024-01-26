@@ -6,9 +6,10 @@ import { HttpOrderRepository } from '../infra/repositories'
 import { HttpService } from '../infra/http/HttpService'
 import { IProcessPaymentUseCase } from '../domain/usecases/ProcessPayment/IProcessPayment'
 import { ProcessPaymentUseCase } from '../domain/usecases/ProcessPayment/ProcessPayment'
+import { env } from './env'
 
 export async function initializeContainer() {
-  const mongoDbClientInstance = await MongoDbClient.connect()
+  const mongoDbClientInstance = await MongoDbClient.connect(env.mongoUrl)
 
   container.registerInstance('MongoDbClient', mongoDbClientInstance)
 

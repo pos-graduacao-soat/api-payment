@@ -1,6 +1,4 @@
 import { MongoClient } from 'mongodb'
-import { env } from '../../main/env'
-
 export class MongoDbClient {
   private connection: MongoClient
 
@@ -8,8 +6,8 @@ export class MongoDbClient {
     this.connection = connection
   }
 
-  static async connect(): Promise<MongoDbClient> {
-    return MongoClient.connect(env.mongoUrl)
+  static async connect(url: string): Promise<MongoDbClient> {
+    return MongoClient.connect(url)
       .then(connection => {
         console.log('MongoDB connected successfully')
         return new MongoDbClient(connection)
