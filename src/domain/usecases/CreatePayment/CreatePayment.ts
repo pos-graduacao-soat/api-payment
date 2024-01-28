@@ -21,7 +21,7 @@ export class CreatePaymentUseCase implements ICreatePaymentUseCase {
   async create(params: CreatePaymentDTO): Promise<Payment> {
     const { orderId } = params
 
-    if (!orderId) throw new MissingNecessaryDataError('Missing necessary param orderId')
+    if (!orderId || orderId === '') throw new MissingNecessaryDataError('Missing necessary param orderId')
 
     await this.doesPaymentExistsForOrderId(orderId)
     await this.doesOrderExists(orderId)

@@ -9,23 +9,25 @@ function startHttpServer() {
 
   const errorHandler = container.resolve(HttpErrorHandler)
 
-  const server = express()
+  const expressServer = express()
   const router = Router()
 
-  server.use(express.json())
-  server.use(express.urlencoded({ extended: true }))
-  server.use(registerPaymentRoutes(router))
-  server.use(utilRoutes)
+  expressServer.use(express.json())
+  expressServer.use(express.urlencoded({ extended: true }))
+  expressServer.use(registerPaymentRoutes(router))
+  expressServer.use(utilRoutes)
 
-  server.use((err: Error, req: Request, res: Response, next: NextFunction) => {
+  expressServer.use((err: Error, req: Request, res: Response, next: NextFunction) => {
     const response = errorHandler.handle(err)
     const errorHandlerAdapter = adaptErrorHandler(response)
     return errorHandlerAdapter(req, res, next)
   })
 
-  server.listen(process.env.PORT || 3000, () => {
+  const httpServer = expressServer.listen(process.env.PORT || 3000, () => {
     console.log(`Http server running at port ${process.env.PORT}`)
   })
+
+  return httpServer
 }
 
 export { startHttpServer }
