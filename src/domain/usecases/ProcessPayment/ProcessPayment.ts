@@ -51,8 +51,6 @@ export class ProcessPaymentUseCase implements IProcessPaymentUseCase {
         return OrderStatus.PAYMENTPROBLEM
       case Status.RECEIVED:
         return OrderStatus.WAITINGPAYMENT
-      default:
-        throw new Error('Invalid payment status')
     }
   }
 }

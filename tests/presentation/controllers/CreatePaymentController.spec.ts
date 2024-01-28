@@ -9,6 +9,7 @@ describe('CreatePaymentController', () => {
   let controller: CreatePaymentController
 
   beforeEach(() => {
+    jest.clearAllMocks()
     createPaymentUseCaseMock = {
       create: jest.fn(),
     }
@@ -26,7 +27,6 @@ describe('CreatePaymentController', () => {
   }
   it('should return 201 and the payment data when creation is successful', async () => {
     const paymentData = {
-      id: '1234',
       orderId: '123345',
       status: Status.PAID,
       code: '123352352',
@@ -39,7 +39,7 @@ describe('CreatePaymentController', () => {
     const response = await controller.handle(mockedHttpRequestParams)
 
     expect(response.statusCode).toBe(201)
-    expect(createPaymentUseCaseMock.create).toHaveBeenCalledWith(paymentData)
+    expect(createPaymentUseCaseMock.create).toHaveBeenCalledWith({ orderId: paymentData.orderId })
 
     expect(response.body).toHaveProperty('id')
     expect(response.body).toHaveProperty('createdAt')
