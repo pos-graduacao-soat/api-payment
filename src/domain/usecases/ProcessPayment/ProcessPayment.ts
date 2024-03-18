@@ -3,19 +3,20 @@ import { IProcessPaymentUseCase } from './IProcessPayment'
 import { Payment, Status } from '../../entities/Payment'
 import { IOrderRepository } from '../../ports/repositories/Order'
 import { NotFoundError } from '../../errors/NotFoundError'
-import { Status as OrderStatus } from '../../valueObjects/Order'
+import { Order, Status as OrderStatus } from '../../valueObjects/Order'
 import { IPaymentRepository } from '../../ports/repositories/Payment'
 import { MissingNecessaryDataError } from '../../errors/MissingNecessaryData'
 import { ProcessPaymentDTO } from './ProcessPaymentDTO'
 import { InvalidParamError } from '../../errors/InvalidParam'
+import { UpdateOrderPublisher } from '../../../infra/amqp/producers/OrdersPublisher'
 
 @injectable()
 export class ProcessPaymentUseCase implements IProcessPaymentUseCase {
   constructor(
     @inject('IPaymentRepository')
     private readonly paymentRepository: IPaymentRepository,
-    @inject('IOrderRepository')
-    private readonly orderRepository: IOrderRepository
+    @inject('UpdateOrderPublisher')
+    private readonly updateOrderPublisher: UpdateOrderPublisher
   ) { }
 
   async process(params: ProcessPaymentDTO): Promise<Payment> {
@@ -30,17 +31,13 @@ export class ProcessPaymentUseCase implements IProcessPaymentUseCase {
 
     if (!updatedPayment) throw new Error('Payment not updated')
 
-    await this.updateOrderStatus(updatedPayment.orderId, updatedPayment.status)
+    const orderNewStatus = this.convertPaymentStatusToOrderStatus(updatedPayment.status)
+
+    const updatedOrder = new Order({ id: updatedPayment.orderId, status: orderNewStatus })
+
+    await this.updateOrderPublisher.publish(JSON.stringify(updatedOrder))
 
     return updatedPayment
-  }
-
-  private async updateOrderStatus(orderId: string, updatedPaymentStatus: Status): Promise<void> {
-    const updatedOrderStatus = this.convertPaymentStatusToOrderStatus(updatedPaymentStatus)
-
-    const isUpdated = await this.orderRepository.updateStatus(orderId, updatedOrderStatus)
-
-    if (!isUpdated) throw new NotFoundError('Order not found.')
   }
 
   private convertPaymentStatusToOrderStatus(paymentStatus: Status): OrderStatus {
