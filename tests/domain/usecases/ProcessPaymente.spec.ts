@@ -7,11 +7,12 @@ import { IOrderRepository } from '../../../src/domain/ports/repositories/Order'
 import { IPaymentRepository } from '../../../src/domain/ports/repositories/Payment'
 import { ProcessPaymentUseCase } from '../../../src/domain/usecases'
 import { NotFoundError } from '../../../src/domain/errors/NotFoundError'
+import { UpdateOrderPublisher } from '../../../src/infra/amqp/producers/OrdersPublisher'
 
 
 describe('ProcessPaymentUseCase', () => {
   let paymentRepository: jest.Mocked<IPaymentRepository>
-  let orderRepository: jest.Mocked<IOrderRepository>
+  let updateOrderPublisher: jest.Mocked<UpdateOrderPublisher>
   let processPaymentUseCase: ProcessPaymentUseCase
 
   beforeEach(() => {
@@ -19,11 +20,11 @@ describe('ProcessPaymentUseCase', () => {
       updateStatus: jest.fn(),
     } as any
 
-    orderRepository = {
-      updateStatus: jest.fn(),
+    updateOrderPublisher = {
+      publish: jest.fn(),
     } as any
 
-    processPaymentUseCase = new ProcessPaymentUseCase(paymentRepository, orderRepository)
+    processPaymentUseCase = new ProcessPaymentUseCase(paymentRepository, updateOrderPublisher)
   })
 
   it('should throw an error if paymentId or status is missing', async () => {
@@ -36,43 +37,27 @@ describe('ProcessPaymentUseCase', () => {
 
   it('should update the payment status to PAID and order status to SUCCESSFULPAYMENT', async () => {
     paymentRepository.updateStatus.mockResolvedValue(new Payment({ id: '1', status: Status.PAID, orderId: '1' }))
-    orderRepository.updateStatus.mockResolvedValue(true)
 
     const payment = await processPaymentUseCase.process({ paymentId: '1', status: Status.PAID })
 
     expect(payment).toBeInstanceOf(Payment)
     expect(paymentRepository.updateStatus).toBeCalledTimes(1)
-    expect(orderRepository.updateStatus).toBeCalledTimes(1)
-    expect(orderRepository.updateStatus).toBeCalledWith('1', OrderStatus.SUCCESSFULPAYMENT)
   })
 
   it('should update the payment status to NOTPAID and order status to PAYMENTPROBLEM', async () => {
     paymentRepository.updateStatus.mockResolvedValue(new Payment({ id: '1', status: Status.NOTPAID, orderId: '1' }))
-    orderRepository.updateStatus.mockResolvedValue(true)
 
     const payment = await processPaymentUseCase.process({ paymentId: '1', status: Status.NOTPAID })
 
     expect(payment).toBeInstanceOf(Payment)
     expect(paymentRepository.updateStatus).toBeCalledTimes(1)
-    expect(orderRepository.updateStatus).toBeCalledTimes(1)
-    expect(orderRepository.updateStatus).toBeCalledWith('1', OrderStatus.PAYMENTPROBLEM)
   })
   it('should update the payment status to RECEIVED and order status to WAITINGPAYMENT', async () => {
     paymentRepository.updateStatus.mockResolvedValue(new Payment({ id: '1', status: Status.RECEIVED, orderId: '1' }))
-    orderRepository.updateStatus.mockResolvedValue(true)
 
     const payment = await processPaymentUseCase.process({ paymentId: '1', status: Status.RECEIVED })
 
     expect(payment).toBeInstanceOf(Payment)
     expect(paymentRepository.updateStatus).toBeCalledTimes(1)
-    expect(orderRepository.updateStatus).toBeCalledTimes(1)
-    expect(orderRepository.updateStatus).toBeCalledWith('1', OrderStatus.WAITINGPAYMENT)
-  })
-
-  it('should throw an error if order is not found', async () => {
-    paymentRepository.updateStatus.mockResolvedValue(new Payment({ id: '1', status: Status.PAID, orderId: '1' }))
-    orderRepository.updateStatus.mockResolvedValue(false)
-
-    await expect(processPaymentUseCase.process({ paymentId: '1', status: Status.PAID })).rejects.toThrow(NotFoundError)
   })
 })
